@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="ur" dir="rtl">
 <head>
@@ -73,29 +72,7 @@
       navigator.serviceWorker.register('sw.js');
     }
 
-    function calculate() 
-      let cutKg = noCutting ? 0 : totalKg * 0.05;
-let cutValue = noCutting ? (cutKg * flourRate) : 0;
-
-let advanceFlour = parseFloat(document.getElementById("advanceFlour").value) || 0;
-
-// پہلے کٹوتی
-let afterCut = totalKg - cutKg;
-
-// پھر ایڈوانس آٹا منہا
-let netKg = afterCut - advanceFlour;
-
-let totalMann = totalKg / 40;
-let safaiCost = noCleaning ? 0 : totalMann * 40;
-let pisaiCost = totalMann * 130;
-
-let totalCost = safaiCost + pisaiCost + cutValue;
-let totalAsFlour = (convertToFlour && flourRate > 0) ? (totalCost / flourRate) : 0;
-
-// بچا ہوا آٹا
-let finalFlour = convertToFlour ? (netKg - totalAsFlour).toFixed(2) : netKg.toFixed(2);
-
-    {
+    function calculate() {
       let totalKg = parseFloat(document.getElementById("weight").value);
       let flourRateInput = document.getElementById("rate").value;
       let advanceFlour = parseFloat(document.getElementById("advanceFlour").value) || 0;
@@ -114,9 +91,15 @@ let finalFlour = convertToFlour ? (netKg - totalAsFlour).toFixed(2) : netKg.toFi
         return;
       }
 
+      // کٹوتی
       let cutKg = noCutting ? 0 : totalKg * 0.05;
-      let cutValue = noCutting ? (totalKg * 0.05 * flourRate) : 0;
-      let netKg = totalKg - (noCutting ? 0 : cutKg);
+      let cutValue = noCutting ? (cutKg * flourRate) : 0;
+
+      // کٹوتی کے بعد آٹا
+      let afterCut = totalKg - cutKg;
+
+      // ایڈوانس کے بعد آٹا
+      let netKg = afterCut - advanceFlour;
 
       let totalMann = totalKg / 40;
       let safaiCost = noCleaning ? 0 : totalMann * 40;
@@ -124,12 +107,17 @@ let finalFlour = convertToFlour ? (netKg - totalAsFlour).toFixed(2) : netKg.toFi
 
       let totalCost = safaiCost + pisaiCost + cutValue;
       let totalAsFlour = (convertToFlour && flourRate > 0) ? (totalCost / flourRate) : 0;
-      let finalFlour = convertToFlour ? (netKg - totalAsFlour - advanceFlour).toFixed(2) : (netKg - advanceFlour).toFixed(2);
+
+      let finalFlour = convertToFlour ? (netKg - totalAsFlour).toFixed(2) : netKg.toFixed(2);
 
       let html = `
         <p>کٹوتی: <strong>${cutKg.toFixed(2)} کلو</strong></p>
-        <p>بچنے والا آٹا (کٹوتی کے بعد): <strong>${netKg.toFixed(2)} کلو</strong></p>
+        <p>کٹوتی کے بعد آٹا: <strong>${afterCut.toFixed(2)} کلو</strong></p>
       `;
+
+      if (advanceFlour > 0) {
+        html += `<p>ایڈوانس آٹا: <strong>${advanceFlour.toFixed(2)} کلو</strong></p>`;
+      }
 
       if (noCutting) {
         html += `<p>کٹوتی کی قیمت: <strong>روپے ${cutValue.toFixed(0)}</strong></p>`;
@@ -141,14 +129,11 @@ let finalFlour = convertToFlour ? (netKg - totalAsFlour).toFixed(2) : netKg.toFi
         <p><strong>مکمل لاگت: روپے ${totalCost.toFixed(0)}</strong></p>
       `;
 
-      if (advanceFlour > 0) {
-        html += `<p>ایڈوانس آٹا: <strong>${advanceFlour} کلو</strong></p>`;
-      }
-
       if (convertToFlour) {
         html += `<p>کل قیمت کے برابر آٹا: <strong>${totalAsFlour.toFixed(2)} کلو</strong></p>`;
-        html += `<p><strong>کسٹمر کو مزید آٹا دینا ہے: ${finalFlour} کلو</strong></p>`;
       }
+
+      html += `<p><strong>کسٹمر کو مزید آٹا دینا ہے: ${finalFlour} کلو</strong></p>`;
 
       document.getElementById("output").style.display = "block";
       document.getElementById("output").innerHTML = html;
