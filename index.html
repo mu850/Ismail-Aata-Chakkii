@@ -3,16 +3,17 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>اسماعیل آٹا چکی</title>
+  <title>اسماعیل آٹا چکی - کیلکولیٹر</title>
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#A7D397">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Nastaliq+Urdu&display=swap" rel="stylesheet">
   <style>
     body {
       font-family: 'Noto Nastaliq Urdu', serif;
       background: #F0FFF0;
       margin: 0;
       padding: 20px;
-      text-align: right;
+      text-align: right; /* Default alignment for Urdu */
     }
     .container {
       background: white;
@@ -23,121 +24,86 @@
       box-shadow: 0 0 10px rgba(0,0,0,0.1);
     }
     label, input, button {
+      display: block; /* Ensure labels are above inputs */
       width: 100%;
-      margin-bottom: 10px;
+      margin-bottom: 12px;
+      box-sizing: border-box; /* Include padding and border in the element's total width and height */
     }
-    input, button {
+    input[type="number"], button {
       padding: 10px;
       font-size: 16px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
     }
-    .checkbox {
-      margin-bottom: 10px;
+    input[type="checkbox"] {
+       width: auto; /* Checkboxes don't need full width */
+       margin-left: 8px; /* Add some space after the checkbox */
+    }
+    .checkbox-container { /* Use a container for better alignment */
+        display: flex;
+        align-items: center;
+        margin-bottom: 10px;
+    }
+     .checkbox-container label {
+        width: auto; /* Allow label to size naturally */
+        margin-bottom: 0; /* Remove bottom margin for label in container */
+        cursor: pointer;
+     }
+    button {
+        background-color: #4CAF50;
+        color: white;
+        border: none;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+    }
+    button:hover {
+        background-color: #45a049;
     }
     .results {
       background-color: #e9ffe9;
       padding: 15px;
       border-radius: 8px;
+      margin-top: 20px;
+      direction: rtl; /* Ensure text direction is right-to-left */
+      text-align: right; /* Ensure text alignment is right */
+    }
+    .results p {
+        margin: 8px 0; /* Add some spacing between result lines */
+    }
+    .results hr {
+        border: none;
+        border-top: 1px solid #ccc;
+        margin: 15px 0;
+    }
+    .results strong {
+        color: #333;
     }
   </style>
 </head>
 <body>
   <div class="container">
-    <h2>اسماعیل آٹا چکی</h2>
-    <label>کل وزن گندم (کلوگرام، اعشاری میں بھی لکھیں):</label>
-    <input type="number" id="weight" placeholder="مثلاً 100">
+    <h2>اسماعیل آٹا چکی - حساب کتاب</h2>
 
-    <label>آٹا فی کلو قیمت (روپے):</label>
+    <label for="weight">کل وزن گندم (کلوگرام، اعشاری میں بھی لکھیں):</label>
+    <input type="number" id="weight" placeholder="مثلاً 100.5" required>
+
+    <label for="rate">آٹا فی کلو قیمت (روپے):</label>
     <input type="number" id="rate" placeholder="مثلاً 80">
 
-    <label>ایڈوانس آٹا (کلوگرام):</label>
-    <input type="number" id="advanceFlour" placeholder="مثلاً 10">
+    <label for="advanceFlour">ایڈوانس آٹا (کلوگرام):</label>
+    <input type="number" id="advanceFlour" placeholder="اگر نہیں تو 0 یا خالی چھوڑ دیں">
 
-    <div class="checkbox">
-      <input type="checkbox" id="noCleaning"> صفائی نہیں کرنی
+    <div class="checkbox-container">
+      <input type="checkbox" id="noCleaning">
+      <label for="noCleaning">صفائی نہیں کرنی</label>
     </div>
-    <div class="checkbox">
-      <input type="checkbox" id="noCutting"> کٹوتی نہیں کرنی، اس کی قیمت ادا ہوگی
+    <div class="checkbox-container">
+      <input type="checkbox" id="noCutting">
+      <label for="noCutting">کٹوتی نہیں کرنی (اس کی قیمت ادا ہوگی)</label>
     </div>
-    <div class="checkbox">
-      <input type="checkbox" id="convertToFlour"> مکمل قیمت کو آٹے میں کنورٹ کریں اور بقایا آٹا دکھائیں
+    <div class="checkbox-container">
+      <input type="checkbox" id="convertToFlour">
+      <label for="convertToFlour">مکمل لاگت کو آٹے میں بدلیں (بقایا آٹا دکھائیں)</label>
     </div>
 
     <button onclick="calculate()">حساب کریں</button>
-
-    <div id="output" class="results" style="display:none;"></div>
-  </div>
-
-  <script>
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('sw.js');
-    }
-
-    function calculate() {
-      let totalKg = parseFloat(document.getElementById("weight").value);
-      let flourRateInput = document.getElementById("rate").value;
-      let advanceFlour = parseFloat(document.getElementById("advanceFlour").value) || 0;
-      let noCleaning = document.getElementById("noCleaning").checked;
-      let noCutting = document.getElementById("noCutting").checked;
-      let convertToFlour = document.getElementById("convertToFlour").checked;
-
-      if (isNaN(totalKg) || totalKg <= 0) {
-        alert("براہ کرم درست وزن درج کریں");
-        return;
-      }
-
-      let flourRate = parseFloat(flourRateInput);
-      if ((noCutting || convertToFlour) && (isNaN(flourRate) || flourRate <= 0)) {
-        alert("براہ کرم آٹا فی کلو قیمت درج کریں کیونکہ آپ نے متعلقہ آپشن منتخب کیا ہے");
-        return;
-      }
-
-      // کٹوتی
-      let cutKg = noCutting ? 0 : totalKg * 0.05;
-      let cutValue = noCutting ? (cutKg * flourRate) : 0;
-
-      // کٹوتی کے بعد آٹا
-      let afterCut = totalKg - cutKg;
-
-      // ایڈوانس کے بعد آٹا
-      let netKg = afterCut - advanceFlour;
-
-      let totalMann = totalKg / 40;
-      let safaiCost = noCleaning ? 0 : totalMann * 40;
-      let pisaiCost = totalMann * 130;
-
-      let totalCost = safaiCost + pisaiCost + cutValue;
-      let totalAsFlour = (convertToFlour && flourRate > 0) ? (totalCost / flourRate) : 0;
-
-      let finalFlour = convertToFlour ? (netKg - totalAsFlour).toFixed(2) : netKg.toFixed(2);
-
-      let html = `
-        <p>کٹوتی: <strong>${cutKg.toFixed(2)} کلو</strong></p>
-        <p>کٹوتی کے بعد آٹا: <strong>${afterCut.toFixed(2)} کلو</strong></p>
-      `;
-
-      if (advanceFlour > 0) {
-        html += `<p>ایڈوانس آٹا: <strong>${advanceFlour.toFixed(2)} کلو</strong></p>`;
-      }
-
-      if (noCutting) {
-        html += `<p>کٹوتی کی قیمت: <strong>روپے ${cutValue.toFixed(0)}</strong></p>`;
-      }
-
-      html += `
-        <p>صفائی کے پیسے: <strong>روپے ${safaiCost.toFixed(0)}</strong></p>
-        <p>پسائی کے پیسے: <strong>روپے ${pisaiCost.toFixed(0)}</strong></p>
-        <p><strong>مکمل لاگت: روپے ${totalCost.toFixed(0)}</strong></p>
-      `;
-
-      if (convertToFlour) {
-        html += `<p>کل قیمت کے برابر آٹا: <strong>${totalAsFlour.toFixed(2)} کلو</strong></p>`;
-      }
-
-      html += `<p><strong>کسٹمر کو مزید آٹا دینا ہے: ${finalFlour} کلو</strong></p>`;
-
-      document.getElementById("output").style.display = "block";
-      document.getElementById("output").innerHTML = html;
-    }
-  </script>
-</body>
-</html>
