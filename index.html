@@ -1,0 +1,136 @@
+
+<!DOCTYPE html>
+<html lang="ur" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>اسماعیل آٹا چکی</title>
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#A7D397">
+  <style>
+    body {
+      font-family: 'Noto Nastaliq Urdu', serif;
+      background: #F0FFF0;
+      margin: 0;
+      padding: 20px;
+      text-align: right;
+    }
+    .container {
+      background: white;
+      max-width: 500px;
+      margin: auto;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+    label, input, button {
+      width: 100%;
+      margin-bottom: 10px;
+    }
+    input, button {
+      padding: 10px;
+      font-size: 16px;
+    }
+    .checkbox {
+      margin-bottom: 10px;
+    }
+    .results {
+      background-color: #e9ffe9;
+      padding: 15px;
+      border-radius: 8px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>اسماعیل آٹا چکی</h2>
+    <label>کل وزن گندم (کلوگرام، اعشاری میں بھی لکھیں):</label>
+    <input type="number" id="weight" placeholder="مثلاً 100">
+
+    <label>آٹا فی کلو قیمت (روپے):</label>
+    <input type="number" id="rate" placeholder="مثلاً 80">
+
+    <label>ایڈوانس آٹا (کلوگرام):</label>
+    <input type="number" id="advanceFlour" placeholder="مثلاً 10">
+
+    <div class="checkbox">
+      <input type="checkbox" id="noCleaning"> صفائی نہیں کرنی
+    </div>
+    <div class="checkbox">
+      <input type="checkbox" id="noCutting"> کٹوتی نہیں کرنی، اس کی قیمت ادا ہوگی
+    </div>
+    <div class="checkbox">
+      <input type="checkbox" id="convertToFlour"> مکمل قیمت کو آٹے میں کنورٹ کریں اور بقایا آٹا دکھائیں
+    </div>
+
+    <button onclick="calculate()">حساب کریں</button>
+
+    <div id="output" class="results" style="display:none;"></div>
+  </div>
+
+  <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('sw.js');
+    }
+
+    function calculate() {
+      let totalKg = parseFloat(document.getElementById("weight").value);
+      let flourRateInput = document.getElementById("rate").value;
+      let advanceFlour = parseFloat(document.getElementById("advanceFlour").value) || 0;
+      let noCleaning = document.getElementById("noCleaning").checked;
+      let noCutting = document.getElementById("noCutting").checked;
+      let convertToFlour = document.getElementById("convertToFlour").checked;
+
+      if (isNaN(totalKg) || totalKg <= 0) {
+        alert("براہ کرم درست وزن درج کریں");
+        return;
+      }
+
+      let flourRate = parseFloat(flourRateInput);
+      if ((noCutting || convertToFlour) && (isNaN(flourRate) || flourRate <= 0)) {
+        alert("براہ کرم آٹا فی کلو قیمت درج کریں کیونکہ آپ نے متعلقہ آپشن منتخب کیا ہے");
+        return;
+      }
+
+      let cutKg = noCutting ? 0 : totalKg * 0.05;
+      let cutValue = noCutting ? (totalKg * 0.05 * flourRate) : 0;
+      let netKg = totalKg - (noCutting ? 0 : cutKg);
+
+      let totalMann = totalKg / 40;
+      let safaiCost = noCleaning ? 0 : totalMann * 40;
+      let pisaiCost = totalMann * 130;
+
+      let totalCost = safaiCost + pisaiCost + cutValue;
+      let totalAsFlour = (convertToFlour && flourRate > 0) ? (totalCost / flourRate) : 0;
+      let finalFlour = convertToFlour ? (netKg - totalAsFlour - advanceFlour).toFixed(2) : (netKg - advanceFlour).toFixed(2);
+
+      let html = `
+        <p>کٹوتی: <strong>${cutKg.toFixed(2)} کلو</strong></p>
+        <p>بچنے والا آٹا (کٹوتی کے بعد): <strong>${netKg.toFixed(2)} کلو</strong></p>
+      `;
+
+      if (noCutting) {
+        html += `<p>کٹوتی کی قیمت: <strong>روپے ${cutValue.toFixed(0)}</strong></p>`;
+      }
+
+      html += `
+        <p>صفائی کے پیسے: <strong>روپے ${safaiCost.toFixed(0)}</strong></p>
+        <p>پسائی کے پیسے: <strong>روپے ${pisaiCost.toFixed(0)}</strong></p>
+        <p><strong>مکمل لاگت: روپے ${totalCost.toFixed(0)}</strong></p>
+      `;
+
+      if (advanceFlour > 0) {
+        html += `<p>ایڈوانس آٹا: <strong>${advanceFlour} کلو</strong></p>`;
+      }
+
+      if (convertToFlour) {
+        html += `<p>کل قیمت کے برابر آٹا: <strong>${totalAsFlour.toFixed(2)} کلو</strong></p>`;
+        html += `<p><strong>کسٹمر کو مزید آٹا دینا ہے: ${finalFlour} کلو</strong></p>`;
+      }
+
+      document.getElementById("output").style.display = "block";
+      document.getElementById("output").innerHTML = html;
+    }
+  </script>
+</body>
+</html>
