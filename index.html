@@ -73,7 +73,29 @@
       navigator.serviceWorker.register('sw.js');
     }
 
-    function calculate() {
+    function calculate() 
+      let cutKg = noCutting ? 0 : totalKg * 0.05;
+let cutValue = noCutting ? (cutKg * flourRate) : 0;
+
+let advanceFlour = parseFloat(document.getElementById("advanceFlour").value) || 0;
+
+// پہلے کٹوتی
+let afterCut = totalKg - cutKg;
+
+// پھر ایڈوانس آٹا منہا
+let netKg = afterCut - advanceFlour;
+
+let totalMann = totalKg / 40;
+let safaiCost = noCleaning ? 0 : totalMann * 40;
+let pisaiCost = totalMann * 130;
+
+let totalCost = safaiCost + pisaiCost + cutValue;
+let totalAsFlour = (convertToFlour && flourRate > 0) ? (totalCost / flourRate) : 0;
+
+// بچا ہوا آٹا
+let finalFlour = convertToFlour ? (netKg - totalAsFlour).toFixed(2) : netKg.toFixed(2);
+
+    {
       let totalKg = parseFloat(document.getElementById("weight").value);
       let flourRateInput = document.getElementById("rate").value;
       let advanceFlour = parseFloat(document.getElementById("advanceFlour").value) || 0;
